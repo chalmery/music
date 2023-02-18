@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
 import {channels} from './shared/constants';
-
+import { Layout } from 'antd';
+const { Footer, Sider, Content } = Layout;
 
 const {ipcRenderer} = window.require('electron');
+
 
 
 function App() {
@@ -38,26 +38,13 @@ function App() {
     }, []);
 
     return (
-        <div className="App">
-            <input
-                onChange={(e) => setProduct(e.target.value)}
-                placeholder="Product name"
-            />
-            <button onClick={getData}>Search</button>
-
-            {data && (
-                <>
-                    <h3>Product info</h3>
-                    <ul>
-                        <li>Name: {data.name}</li>
-                        <li>Price: {data.price}</li>
-                        <li>Color: {data.color}</li>
-                    </ul>
-                </>
-            )}
-
-            <button onClick={getDir}>选择文件</button>
-        </div>
+        <Layout className='layout'>
+            <Layout className='layout'>
+                <Sider className='siderStyle'>Sider</Sider>
+                <Content className='contentStyle'><button onClick={getDir}>选择文件</button></Content>
+            </Layout>
+                <Footer className='footerStyle'>Footer</Footer>
+        </Layout>
     );
 }
 
