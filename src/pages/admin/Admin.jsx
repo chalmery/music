@@ -1,6 +1,7 @@
 import React from 'react'
 import {Layout} from "antd";
 import LeftNav from "../leftnav/LeftNav";
+import FooterBar from '../footer/FooterBar';
 const { Footer, Sider, Content } = Layout;
 
 export default function Admin() {
@@ -16,7 +17,7 @@ export default function Admin() {
           </Content>
         </Layout>
         <Footer className='footerStyle'>
-          Footer
+          <FooterBar/>
         </Footer>
       </Layout>
   )

@@ -29,12 +29,13 @@ export default function LeftNav() {
         };
     }, []);
 
-
     const onSelect = (keys, info) => {
-        console.log('Trigger Select', keys, info);
-    };
-    const onExpand = (keys, info) => {
-        console.log('Trigger Expand', keys, info);
+        console.log('选择的文件', keys);
+        if(keys.length!==0){
+            ipcRenderer.send(channels.SELECT_DIR, {
+                dirs:keys
+            });
+        }
     };
 
     return (
@@ -42,7 +43,6 @@ export default function LeftNav() {
             <Button onClick={getDir}>选择文件</Button>
             <Tree
                 onSelect={onSelect}
-                onExpand={onExpand}
                 treeData={data}
             />
         </div>

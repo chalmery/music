@@ -1,5 +1,8 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('path')
+const { channels } = require('../src/shared/constants');
+const fs = require('fs');
+const { parseFile } = require('music-metadata');
 
 
 function createWindow() {
@@ -64,3 +67,29 @@ ipcMain.on('openDialog', (event) => {
     event.reply("dirList", dirs)
   }
 })
+
+
+/**
+ * 拿到传来的文件夹名称
+ */
+ipcMain.on(channels.SELECT_DIR, (event, args) => {
+  console.log(args.dirs[0])
+  let files =  fs.readdirSync(args.dirs[0])
+  console.log(files);
+
+  let filePath = args.dirs[0]+"/"+files[0];
+
+  console.log(filePath);
+  let info = fs.statSync(filePath);
+  console.log(info.isFile());
+
+  try {
+    // let fileBuffer = fs.readFileSync(filePath);
+    parseFile(filePath).then((iAudioMetadata)=>{
+      console.log(iAudioMetadata);
+      console.log(iAudioMetadata.common.picture);
+    });
+  } catch (error) {
+    console.error(error.message);
+  }
+});
