@@ -43,13 +43,24 @@ app.on('window-all-closed', () => {
 
 
 ipcMain.on('openDialog', (event) => {
-  let file = dialog.showOpenDialogSync({
+  let files = dialog.showOpenDialogSync({
     title: '选择文件路径',
     properties: ['openDirectory', 'multiSelections']
   });
-  if (file !== undefined) {
-    console.log(file.filePaths) //输出结果
-    // 向子进程输出 selectedItem 命令
-    event.reply("selectedItem", file.filePaths)
+  console.log("文件对象"+files)
+  if (files !== undefined) {
+    // 向子进程输出  命令
+    let dirs = []
+    files.forEach(file=>{
+        let split = file.split('/');
+        let value = split[split.length-1];
+        let dirJson = {
+            title : value,
+            key : file
+    
+        }
+        dirs.push(dirJson)
+    })
+    event.reply("dirList", dirs)
   }
 })

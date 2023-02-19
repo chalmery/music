@@ -13,10 +13,14 @@ code {
     monospace;
 }
 
+aside{
+  background: white;
+}
+
 .siderStyle {
-  text-align: center;
-  color: #fff;
-  background-color: #3ba0e9;
+  /*text-align: center;*/
+  /*color: #fff;*/
+  /*background-color: #3ba0e9;*/
 }
 
 .footerStyle {
