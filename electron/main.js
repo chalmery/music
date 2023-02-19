@@ -4,6 +4,7 @@ const { channels } = require('../src/shared/constants');
 const fs = require('fs');
 const { parseFile } = require('music-metadata');
 
+const fileTypeList = ['FLAC', 'flac', 'MP3', 'mp3','ape','APE','MPEG']
 
 function createWindow() {
   // const startUrl = process.env.ELECTRON_START_URL;
@@ -50,19 +51,18 @@ ipcMain.on('openDialog', (event) => {
     title: '选择文件路径',
     properties: ['openDirectory', 'multiSelections']
   });
-  console.log("文件对象"+files)
   if (files !== undefined) {
     // 向子进程输出  命令
     let dirs = []
-    files.forEach(file=>{
-        let split = file.split('/');
-        let value = split[split.length-1];
-        let dirJson = {
-            title : value,
-            key : file
-    
-        }
-        dirs.push(dirJson)
+    files.forEach(file => {
+      let split = file.split('/');
+      let value = split[split.length - 1];
+      let dirJson = {
+        title: value,
+        key: file
+
+      }
+      dirs.push(dirJson)
     })
     event.reply("dirList", dirs)
   }
@@ -73,23 +73,54 @@ ipcMain.on('openDialog', (event) => {
  * 拿到传来的文件夹名称
  */
 ipcMain.on(channels.SELECT_DIR, (event, args) => {
-  console.log(args.dirs[0])
-  let files =  fs.readdirSync(args.dirs[0])
-  console.log(files);
-
-  let filePath = args.dirs[0]+"/"+files[0];
-
-  console.log(filePath);
-  let info = fs.statSync(filePath);
-  console.log(info.isFile());
-
-  try {
-    // let fileBuffer = fs.readFileSync(filePath);
-    parseFile(filePath).then((iAudioMetadata)=>{
-      console.log(iAudioMetadata);
-      console.log(iAudioMetadata.common.picture);
-    });
-  } catch (error) {
-    console.error(error.message);
+  //同步读取文件夹下的文件
+  let files = fs.readdirSync(args.dirs[0])
+  if (files === undefined || files === null || files.length === 0) {
+    return
   }
+  //拼接每个文件的路径
+  let filePaths = []
+  files.forEach(file => {
+    let filePath = args.dirs[0] + "/" + file;
+    let info = fs.statSync(filePath);
+    if (info.isFile()) {
+      filePaths.push(filePath)
+    }
+  })
+  if (filePaths.length === 0) {
+    return
+  }
+
+  //解析文件对象
+  async function getMetadata() {
+    const promises = [];
+    filePaths.forEach(filePath => {
+      promises.push(parseFile(filePath));
+    })
+    await Promise.allSettled(promises).then((args) => {
+      let metadataList = []
+      for (let i = 0; i < args.length; i++) {
+        let value = args[i].value;
+        if (value !== undefined && fileTypeList.includes(value.format.container)) {
+          let metadata = {
+            key: i,
+            title: value.common.title,
+            artist: value.common.artist,
+            album: value.common.album,
+            picture: null,
+            path: filePaths[i],
+            duration: value.format.duration,
+            type: value.format.container
+          }
+          if (value.common.picture !== undefined && value.common.picture.length !== 0) {
+            metadata.path = value.common.picture[0].data
+          }
+          metadataList.push(metadata)
+        }
+      }
+      event.reply("metadataList", metadataList)
+    });
+  }
+
+  getMetadata();
 });
